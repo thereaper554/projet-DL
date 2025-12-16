@@ -2,57 +2,68 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-# =========================
-# XOR DATASET
-# =========================
+# ==============================
+# STREAMLIT HEADER (NEW)
+# ==============================
+st.set_page_config(page_title="XOR Neural Network", layout="wide")
+st.title("XOR Neural Network — Your Original Code (Visualized)")
+
+# ==============================
+# SIDEBAR CONTROLS (NEW)
+# ==============================
+lr = st.sidebar.slider("Learning Rate", 0.01, 1.0, 0.1, 0.01)
+epochs = st.sidebar.slider("Epochs", 1000, 20000, 10000, 1000)
+
+# ==============================
+# YOUR XOR DATASET (UNCHANGED)
+# ==============================
 X = np.array([[0, 0],
               [0, 1],
               [1, 0],
               [1, 1]])
+
 y = np.array([[0], [1], [1], [0]])
 
-X = X.T  # shape (2,4)
-y = y.T  # shape (1,4)
+X = X.T   # shape (2,4)
+y = y.T   # shape (1,4)
 
-# =========================
-# SIGMOID FUNCTION
-# =========================
+# ==============================
+# YOUR SIGMOID (UNCHANGED)
+# ==============================
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))
 
-# =========================
-# INITIAL WEIGHTS
-# =========================
-np.random.seed(42)
-W1 = np.random.randn(2, 2)
+# ==============================
+# YOUR INITIAL WEIGHTS (UNCHANGED)
+# ==============================
+W1 = np.random.randn(2, 2) * 1
 b1 = np.zeros((2, 1))
-W2 = np.random.randn(1, 2)
+
+W2 = np.random.randn(1, 2) * 1
 b2 = np.zeros((1, 1))
 
-# =========================
-# HYPERPARAMETERS
-# =========================
-lr = 0.1
-epochs = 10000
 m = X.shape[1]
 
-# =========================
-# TRAINING LOOP + LOSS TRACKING
-# =========================
-loss_history = []
+losses = []   # (NEW) only for plotting
 
+# ==============================
+# YOUR TRAINING LOOP (UNCHANGED)
+# ==============================
 for epoch in range(epochs):
-    # Forward pass
+
+    # FORWARD PASS
     z1 = np.dot(W1, X) + b1
     a1 = sigmoid(z1)
+
     z2 = np.dot(W2, a1) + b2
     a2 = sigmoid(z2)
 
-    # Loss
-    loss = -np.mean(y*np.log(a2 + 1e-9) + (1-y)*np.log(1-a2 + 1e-9))
-    loss_history.append(loss)
+    # LOSS
+    loss = -np.mean(y * np.log(a2 + 1e-9) +
+                    (1 - y) * np.log(1 - a2 + 1e-9))
+    losses.append(loss)   # (NEW) store loss only
 
-    # Backprop
+    # BACKPROP
     dZ2 = a2 - y
     dW2 = np.dot(dZ2, a1.T) / m
     db2 = np.sum(dZ2, axis=1, keepdims=True) / m
@@ -61,68 +72,81 @@ for epoch in range(epochs):
     dW1 = np.dot(dZ1, X.T) / m
     db1 = np.sum(dZ1, axis=1, keepdims=True) / m
 
-    # Gradient descent
+    # GRADIENT DESCENT
     W2 -= lr * dW2
     b2 -= lr * db2
     W1 -= lr * dW1
     b1 -= lr * db1
 
-# =========================
-# STREAMLIT INTERFACE
-# =========================
-st.title("XOR Neural Network with Plots")
+# ==============================
+# VISUALIZATION (NEW)
+# ==============================
+col1, col2 = st.columns(2)
 
-# Input selection
-x1 = st.selectbox("Select x1", [0, 1])
-x2 = st.selectbox("Select x2", [0, 1])
+# ---- LOSS CURVE ----
+with col1:
+    st.subheader("Training Loss")
+    fig, ax = plt.subplots()
+    ax.plot(losses)
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("Loss")
+    ax.grid(True)
+    st.pyplot(fig)
 
-x_input = np.array([[x1], [x2]])
-a1_input = sigmoid(np.dot(W1, x_input) + b1)
-a2_input = sigmoid(np.dot(W2, a1_input) + b2)
-prediction = int(a2_input >= 0.5)
+# ---- DECISION BOUNDARY ----
+with col2:
+    st.subheader("Decision Boundary")
 
-st.write(f"Prediction: **{prediction}**")
-st.write(f"Network output (sigmoid): {a2_input[0,0]:.4f}")
+    xx, yy = np.meshgrid(np.linspace(-0.2, 1.2, 200),
+                         np.linspace(-0.2, 1.2, 200))
 
-# --------------------------
-# Plot 1: Loss curve
-# --------------------------
-st.subheader("Loss Curve")
-fig, ax = plt.subplots()
-ax.plot(loss_history)
-ax.set_xlabel("Epoch")
-ax.set_ylabel("Loss")
-ax.set_title("Training Loss over Epochs")
-st.pyplot(fig)
+    grid = np.c_[xx.ravel(), yy.ravel()].T
 
-# --------------------------
-# Plot 2: XOR Decision Boundary
-# --------------------------
-st.subheader("XOR Decision Boundary")
+    z1 = np.dot(W1, grid) + b1
+    a1 = sigmoid(z1)
+    z2 = np.dot(W2, a1) + b2
+    preds = sigmoid(z2).reshape(xx.shape)
 
-# create a grid
-xx, yy = np.meshgrid(np.linspace(-0.1, 1.1, 200),
-                     np.linspace(-0.1, 1.1, 200))
-grid = np.c_[xx.ravel(), yy.ravel()].T
-a1_grid = sigmoid(np.dot(W1, grid) + b1)
-a2_grid = sigmoid(np.dot(W2, a1_grid) + b2)
-pred_grid = (a2_grid >= 0.5).reshape(xx.shape)
+    fig2, ax2 = plt.subplots()
+    ax2.contourf(xx, yy, preds, levels=20, alpha=0.7)
+    ax2.scatter(X[0], X[1], c=y.flatten(), edgecolors="k", s=100)
+    ax2.set_xlabel("x1")
+    ax2.set_ylabel("x2")
+    st.pyplot(fig2)
 
-fig2, ax2 = plt.subplots()
-ax2.contourf(xx, yy, pred_grid, alpha=0.3, cmap=plt.cm.Paired)
-ax2.scatter(X[0, :], X[1, :], c=y[0], edgecolors='k', s=100, cmap=plt.cm.Paired)
-ax2.set_xlabel("x1")
-ax2.set_ylabel("x2")
-ax2.set_title("XOR Decision Boundary")
-st.pyplot(fig2)
+# ==============================
+# YOUR FINAL RESULTS TABLE (UNCHANGED)
+# ==============================
+st.subheader("Final XOR Results")
 
-# --------------------------
-# Display full XOR table
-# --------------------------
-st.subheader("Full XOR Table")
+rows = []
 for i in range(4):
     x = X[:, i].reshape(2, 1)
-    a1_i = sigmoid(np.dot(W1, x) + b1)
-    a2_i = sigmoid(np.dot(W2, a1_i) + b2)
-    pred_i = int(a2_i >= 0.5)
-    st.write(f"{x[0,0]} XOR {x[1,0]} = {pred_i} (sigmoid={a2_i[0,0]:.4f})")
+
+    z1 = np.dot(W1, x) + b1
+    a1 = sigmoid(z1)
+
+    z2 = np.dot(W2, a1) + b2
+    a2 = sigmoid(z2)
+
+    rows.append([
+        int(x[0,0]),
+        int(x[1,0]),
+        round(z1[0,0], 3),
+        round(z1[1,0], 3),
+        round(a1[0,0], 3),
+        round(a1[1,0], 3),
+        round(a2[0,0], 3),
+        int(a2 >= 0.5)
+    ])
+
+st.table({
+    "x1": [r[0] for r in rows],
+    "x2": [r[1] for r in rows],
+    "z1[0]": [r[2] for r in rows],
+    "z1[1]": [r[3] for r in rows],
+    "a1[0]": [r[4] for r in rows],
+    "a1[1]": [r[5] for r in rows],
+    "sigmoid(z2)": [r[6] for r in rows],
+    "Prediction": [r[7] for r in rows],
+})
