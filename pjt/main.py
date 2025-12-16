@@ -60,7 +60,7 @@ def get_dataset(gate):
 
     if gate == "AND":
         Y = np.array([[0], [0], [0], [1]])
-    else:  # OR
+    else:  
         Y = np.array([[0], [1], [1], [1]])
 
     return X, Y
@@ -69,13 +69,13 @@ X, Y = get_dataset(gate)
 n = X.shape[0]
 
 # =========================================================
-# Sigmoid function (lecture formula)
+# Sigmoid function  
 # =========================================================
 def sigmoid(Z):
     return 1 / (1 + np.exp(-Z))
 
 # =========================================================
-# Training function (UNCHANGED MATHEMATICS)
+# Training f
 # =========================================================
 def train_perceptron(X, Y, alpha, epochs):
     np.random.seed(1)
@@ -112,7 +112,7 @@ def train_perceptron(X, Y, alpha, epochs):
 if st.button("Train Perceptron"):
     W, b, losses, grad_norms = train_perceptron(X, Y, alpha, epochs)
 
-    # Save model (runtime only)
+    # Save model  
     model_name = f"model_{gate.lower()}.pkl"
     joblib.dump({"W": W, "b": b}, model_name)
 
