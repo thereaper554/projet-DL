@@ -2,52 +2,82 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import joblib
-import os
 
 # =========================================================
 # Page configuration
 # =========================================================
-st.set_page_config(page_title="OR Gate Perceptron", layout="centered")
+st.set_page_config(
+    page_title="Perceptron – Logic Gates",
+    layout="centered"
+)
 
-st.title("Single Perceptron – OR Logic Gate")
+st.title("Single Perceptron for AND / OR Logic Gates")
 st.markdown(
     """
-    This application demonstrates **logistic regression (single perceptron)**  
-    trained from scratch on the **OR logic gate** using **exact lecture formulas**.
+    This application demonstrates a **single-layer perceptron (logistic regression)**
+    trained from scratch using **exact lecture formulas**.
+    
+    The user may switch between **AND** and **OR** gates, both of which are
+    **linearly separable**.
     """
 )
 
 # =========================================================
-# OR Gate Dataset
+# Sidebar controls
 # =========================================================
-X = np.array([
-    [0, 0],
-    [0, 1],
-    [1, 0],
-    [1, 1]
-])
+st.sidebar.header("Configuration")
 
-Y = np.array([[0], [1], [1], [1]])
+gate = st.sidebar.selectbox(
+    "Logic Gate",
+    ["AND", "OR"]
+)
+
+alpha = st.sidebar.slider(
+    "Learning rate (α)",
+    min_value=0.01,
+    max_value=1.0,
+    value=0.1
+)
+
+epochs = st.sidebar.slider(
+    "Epochs",
+    min_value=1000,
+    max_value=30000,
+    value=20000,
+    step=1000
+)
+
+# =========================================================
+# Dataset definition
+# =========================================================
+def get_dataset(gate):
+    X = np.array([
+        [0, 0],
+        [0, 1],
+        [1, 0],
+        [1, 1]
+    ])
+
+    if gate == "AND":
+        Y = np.array([[0], [0], [0], [1]])
+    else:  # OR
+        Y = np.array([[0], [1], [1], [1]])
+
+    return X, Y
+
+X, Y = get_dataset(gate)
 n = X.shape[0]
 
 # =========================================================
-# Sidebar – Hyperparameters
-# =========================================================
-st.sidebar.header("Training Parameters")
-
-alpha = st.sidebar.slider("Learning rate (α)", 0.01, 1.0, 0.1)
-epochs = st.sidebar.slider("Epochs", 1000, 30000, 20000, step=1000)
-
-# =========================================================
-# Sigmoid (lecture formula)
+# Sigmoid function (lecture formula)
 # =========================================================
 def sigmoid(Z):
     return 1 / (1 + np.exp(-Z))
 
 # =========================================================
-# Training function
+# Training function (UNCHANGED MATHEMATICS)
 # =========================================================
-def train_model(X, Y, alpha, epochs):
+def train_perceptron(X, Y, alpha, epochs):
     np.random.seed(1)
     W = np.random.randn(2, 1) * 0.1
     b = 0.0
@@ -56,18 +86,21 @@ def train_model(X, Y, alpha, epochs):
     grad_norms = []
 
     for _ in range(epochs):
+        # Forward pass
         Z = np.dot(X, W) + b
         A = sigmoid(Z)
 
         # Binary Cross Entropy
-        L = -(1/n) * np.sum(Y*np.log(A) + (1-Y)*np.log(1-A))
+        L = -(1/n) * np.sum(Y * np.log(A) + (1 - Y) * np.log(1 - A))
         losses.append(L)
 
+        # Gradients
         dW = (1/n) * np.dot(X.T, (A - Y))
         db = (1/n) * np.sum(A - Y)
 
         grad_norms.append(np.linalg.norm(dW))
 
+        # Update
         W = W - alpha * dW
         b = b - alpha * db
 
@@ -77,12 +110,13 @@ def train_model(X, Y, alpha, epochs):
 # Train button
 # =========================================================
 if st.button("Train Perceptron"):
-    W, b, losses, grad_norms = train_model(X, Y, alpha, epochs)
+    W, b, losses, grad_norms = train_perceptron(X, Y, alpha, epochs)
 
-    # Save model
-    joblib.dump({"W": W, "b": b}, "model.joblib")
+    # Save model (runtime only)
+    model_name = f"model_{gate.lower()}.pkl"
+    joblib.dump({"W": W, "b": b}, model_name)
 
-    st.success("Model trained and saved successfully.")
+    st.success("Training completed successfully.")
 
     # =====================================================
     # Loss plot
@@ -99,7 +133,7 @@ if st.button("Train Perceptron"):
     st.write(f"**Minimum loss achieved:** `{min(losses):.6f}`")
 
     # =====================================================
-    # Gradient norm plot
+    # Gradient evolution plot
     # =====================================================
     st.subheader("Gradient Evolution")
 
@@ -111,9 +145,9 @@ if st.button("Train Perceptron"):
     st.pyplot(fig2)
 
     # =====================================================
-    # Final predictions table
+    # Final results table
     # =====================================================
-    st.subheader("Final Predictions (OR Gate)")
+    st.subheader(f"Final Predictions ({gate} Gate)")
 
     Z = np.dot(X, W) + b
     A = sigmoid(Z)
@@ -126,25 +160,3 @@ if st.button("Train Perceptron"):
         "sigmoid(z)": A.ravel(),
         "prediction": preds.ravel().astype(int)
     })
-
-# =========================================================
-# Load existing model
-# =========================================================
-if os.path.exists("model.joblib"):
-    if st.button("Load Saved Model"):
-        model = joblib.load("model.joblib")
-        W, b = model["W"], model["b"]
-
-        st.success("Saved model loaded.")
-
-        Z = np.dot(X, W) + b
-        A = sigmoid(Z)
-        preds = np.round(A)
-
-        st.table({
-            "x1": X[:, 0],
-            "x2": X[:, 1],
-            "z": Z.ravel(),
-            "sigmoid(z)": A.ravel(),
-            "prediction": preds.ravel().astype(int)
-        })
