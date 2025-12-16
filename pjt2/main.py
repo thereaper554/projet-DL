@@ -3,19 +3,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # ==============================
-# STREAMLIT HEADER (NEW)
+# STREAMLIT HEADER 
 # ==============================
 st.set_page_config(page_title="XOR Neural Network", layout="wide")
 st.title("XOR Neural Network — Your Original Code (Visualized)")
 
 # ==============================
-# SIDEBAR CONTROLS (NEW)
+# SIDEBAR CONTROLS 
 # ==============================
 lr = st.sidebar.slider("Learning Rate", 0.01, 1.0, 0.1, 0.01)
 epochs = st.sidebar.slider("Epochs", 1000, 20000, 10000, 1000)
 
 # ==============================
-# YOUR XOR DATASET (UNCHANGED)
+# XOR DATASET 
 # ==============================
 X = np.array([[0, 0],
               [0, 1],
@@ -28,13 +28,13 @@ X = X.T   # shape (2,4)
 y = y.T   # shape (1,4)
 
 # ==============================
-# YOUR SIGMOID (UNCHANGED)
+# SIGMOID ACTIVATION FUNCTION
 # ==============================
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))
 
 # ==============================
-# YOUR INITIAL WEIGHTS (UNCHANGED)
+# INITIAL WEIGHTS 
 # ==============================
 W1 = np.random.randn(2, 2) * 1
 b1 = np.zeros((2, 1))
@@ -47,7 +47,7 @@ m = X.shape[1]
 losses = []   # (NEW) only for plotting
 
 # ==============================
-# YOUR TRAINING LOOP (UNCHANGED)
+# TRAINING 
 # ==============================
 for epoch in range(epochs):
 
@@ -61,7 +61,7 @@ for epoch in range(epochs):
     # LOSS
     loss = -np.mean(y * np.log(a2 + 1e-9) +
                     (1 - y) * np.log(1 - a2 + 1e-9))
-    losses.append(loss)   # (NEW) store loss only
+    losses.append(loss)  
 
     # BACKPROP
     dZ2 = a2 - y
@@ -79,7 +79,7 @@ for epoch in range(epochs):
     b1 -= lr * db1
 
 # ==============================
-# VISUALIZATION (NEW)
+# VISUALIZATION  
 # ==============================
 col1, col2 = st.columns(2)
 
@@ -115,7 +115,7 @@ with col2:
     st.pyplot(fig2)
 
 # ==============================
-# YOUR FINAL RESULTS TABLE (UNCHANGED)
+# FINAL RESULTS TABLE  
 # ==============================
 st.subheader("Final XOR Results")
 
@@ -150,3 +150,4 @@ st.table({
     "sigmoid(z2)": [r[6] for r in rows],
     "Prediction": [r[7] for r in rows],
 })
+
