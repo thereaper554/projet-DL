@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 # STREAMLIT HEADER 
 # ==============================
 st.set_page_config(page_title="XOR Neural Network", layout="wide")
-st.title("XOR Neural Network — Your Original Code (Visualized)")
+st.title("XOR Neural Network")
 
 # ==============================
 # SIDEBAR CONTROLS 
@@ -150,4 +150,5 @@ st.table({
     "sigmoid(z2)": [r[6] for r in rows],
     "Prediction": [r[7] for r in rows],
 })
+
 
