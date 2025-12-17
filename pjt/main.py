@@ -135,6 +135,34 @@ if st.button("Train Perceptron"):
     ax2.set_ylabel("||∇W||")
     ax2.set_title("Gradient Norm Over Training")
     st.pyplot(fig2)
+        
+    # ==============================
+    # Decision Boundary pour AND/OR
+    # ==============================
+    st.subheader("Decision Boundary")
+    
+    # Crée une grille de points dans le plan x1-x2
+    xx, yy = np.meshgrid(np.linspace(-0.2, 1.2, 200),
+                         np.linspace(-0.2, 1.2, 200))
+    
+    # Transforme la grille en colonnes pour le perceptron
+    grid = np.c_[xx.ravel(), yy.ravel()]
+    
+    # Calcul du forward pass pour chaque point de la grille
+    Z = np.dot(grid, W) + b
+    A = 1 / (1 + np.exp(-Z))  # sigmoid
+    
+    # Arrondir pour obtenir les classes 0 ou 1
+    preds = np.round(A).reshape(xx.shape)
+    
+    # Affichage
+    fig3, ax3 = plt.subplots()
+    ax3.contourf(xx, yy, preds, alpha=0.5, cmap="coolwarm")
+    ax3.scatter(X[:, 0], X[:, 1], c=Y.ravel(), edgecolors="k", s=100, cmap="coolwarm")
+    ax3.set_xlabel("x1")
+    ax3.set_ylabel("x2")
+    ax3.set_title(f"Decision Boundary pour {gate} Gate")
+    st.pyplot(fig3)
 
     # =====================================================
     # Final results table
