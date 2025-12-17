@@ -12,15 +12,7 @@ st.set_page_config(
 )
 
 st.title("Single Perceptron for AND / OR Logic Gates")
-st.markdown(
-    """
-    This application demonstrates a **single-layer perceptron (logistic regression)**
-    trained from scratch using **exact lecture formulas**.
-    
-    The user may switch between **AND** and **OR** gates, both of which are
-    **linearly separable**.
-    """
-)
+
 
 # =========================================================
 # Sidebar controls
