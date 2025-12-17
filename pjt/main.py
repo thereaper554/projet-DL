@@ -157,12 +157,13 @@ if st.button("Train Perceptron"):
     
     # Affichage
     fig3, ax3 = plt.subplots()
-    ax3.contourf(xx, yy, preds, alpha=0.5, cmap="coolwarm")
-    ax3.scatter(X[:, 0], X[:, 1], c=Y.ravel(), edgecolors="k", s=100, cmap="coolwarm")
+    ax3.contourf(xx, yy, preds, levels=[-0.1, 0.5, 1.1], alpha=0.5, cmap="coolwarm")
+    ax3.scatter(X[:, 0], X[:, 1], c=Y.ravel().astype(float), edgecolors="k", s=100, cmap="coolwarm")
     ax3.set_xlabel("x1")
     ax3.set_ylabel("x2")
     ax3.set_title(f"Decision Boundary pour {gate} Gate")
     st.pyplot(fig3)
+
 
     # =====================================================
     # Final results table
